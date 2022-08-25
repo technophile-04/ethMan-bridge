@@ -37,6 +37,11 @@ export const getAppContractsConfig = () => {
         hardhatContracts.YourNFT__factory,
         hardhatDeployedContractsJson
       ),
+      BridgeCustody: createConnectorForHardhatContract(
+        'BridgeCustody',
+        hardhatContracts.BridgeCustody__factory,
+        hardhatDeployedContractsJson
+      ),
 
       // --------------------------------------------------
       // 🙋🏽‍♂️ Add your external contracts here, make sure to define the address in `externalContractsConfig.ts`Í

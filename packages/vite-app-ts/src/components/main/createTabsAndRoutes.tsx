@@ -71,7 +71,7 @@ export const createTabsAndRoutes = (
   );
 
   const routeContent = (
-    <>
+    <div>
       <Route key={'main'} exact path={'/'}>
         {pageList.mainPage.content}
       </Route>
@@ -80,7 +80,7 @@ export const createTabsAndRoutes = (
           {content}
         </Route>
       ))}
-    </>
+    </div>
   );
 
   return { tabMenu: tabMenu, routeContent };
