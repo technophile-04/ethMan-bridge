@@ -10,10 +10,11 @@ contract BridgeCustody is IERC721Receiver, ReentrancyGuard, Ownable {
   struct Custody {
     uint256 tokenId;
     address holder;
+    string tokenURI;
   }
 
   /* ========== events ========== */
-  event NFTCustody(uint256 indexed tokenId, address holder);
+  event NFTCustody(uint256 indexed tokenId, address holder, string tokenURI);
 
   /* ========== STATE VARIABLES ========== */
   uint256 public constant FEE = 0.001 ether;
@@ -25,38 +26,41 @@ contract BridgeCustody is IERC721Receiver, ReentrancyGuard, Ownable {
     nft = _nft;
   }
 
+  /**
+   * @notice Transfers ownership to contract and Add it in custody
+   */
   function retainNFT(uint256 tokenId) public payable nonReentrant {
     require(msg.value == FEE, "Not enough balance to complete transaction.");
     require(nft.ownerOf(tokenId) == msg.sender, "NFT not yours");
     require(holdCustody[tokenId].tokenId == 0, "NFT already stored");
-    holdCustody[tokenId] = Custody(tokenId, msg.sender);
+    string memory tokenURI = nft.tokenURI(tokenId);
+    holdCustody[tokenId] = Custody(tokenId, msg.sender, tokenURI);
     nft.transferFrom(msg.sender, address(this), tokenId);
-    emit NFTCustody(tokenId, msg.sender);
+    emit NFTCustody(tokenId, msg.sender, tokenURI);
   }
 
-  function retainNew(uint256 tokenId) public nonReentrant onlyOwner {
-    require(holdCustody[tokenId].tokenId == 0, "NFT already stored");
-    holdCustody[tokenId] = Custody(tokenId, msg.sender);
-    nft.transferFrom(msg.sender, address(this), tokenId);
-    emit NFTCustody(tokenId, msg.sender);
-  }
-
+  /**
+   * @dev used to change the holder of NFT in custody if owner transfers it at destination
+   */
   function updateOwner(uint256 tokenId, address newHolder) public nonReentrant onlyOwner {
-    holdCustody[tokenId] = Custody(tokenId, newHolder);
-    emit NFTCustody(tokenId, newHolder);
+    Custody storage updateHolder = holdCustody[tokenId];
+    updateHolder.holder = newHolder;
+    emit NFTCustody(tokenId, newHolder, holdCustody[tokenId].tokenURI);
   }
 
+  /**
+   * @dev this function will be called at destination chain
+   */
   function releaseNFT(uint256 tokenId, address wallet) public nonReentrant onlyOwner {
     nft.transferFrom(address(this), wallet, tokenId);
+    string memory tokenURI = holdCustody[tokenId].tokenURI;
     delete holdCustody[tokenId];
-    emit NFTCustody(tokenId, address(0));
+    emit NFTCustody(tokenId, address(0), tokenURI);
   }
 
-  function emergencyDelete(uint256 tokenId) public nonReentrant onlyOwner {
-    delete holdCustody[tokenId];
-    emit NFTCustody(tokenId, address(0));
-  }
-
+  /**
+   * @dev it reverts when there is direct transffer of NFT without using retainNFT function
+   */
   function onERC721Received(
     address,
     address from,
