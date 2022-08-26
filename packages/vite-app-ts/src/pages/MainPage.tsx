@@ -87,6 +87,7 @@ export const MainPage: FC = () => {
   const yourNFT = useAppContracts('YourNFT', ethersAppContext.chainId);
   const mainnetDai = useAppContracts('DAI', NETWORKS.mainnet.chainId);
   const bridgeCustodyContract = useAppContracts('BridgeCustody', ethersAppContext.chainId);
+  const bridgeNFTContract = useAppContracts('BridgeNFT', ethersAppContext.chainId);
 
   // keep track of a variable from the contract in the local React state:
   const [purpose, update] = useContractReader(
@@ -149,6 +150,16 @@ export const MainPage: FC = () => {
           <GenericContract
             contractName="BridgeCustody"
             contract={bridgeCustodyContract}
+            mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
+            blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}></GenericContract>
+        ),
+      },
+      {
+        name: 'BridgeNFT',
+        content: (
+          <GenericContract
+            contractName="BridgeNFT"
+            contract={bridgeNFTContract}
             mainnetAdaptor={scaffoldAppProviders.mainnetAdaptor}
             blockExplorer={scaffoldAppProviders.targetNetwork.blockExplorer}></GenericContract>
         ),
